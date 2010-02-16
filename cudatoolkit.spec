@@ -17,8 +17,22 @@ ExclusiveArch:	%{ix86} %{x8664}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
+The CUDA™ architecture enables developers to leverage the massively
+parallel processing power of NVIDIA GPUs, delivering the performance
+of NVIDIA’s world-renowned graphics processor technology to general
+purpose GPU Computing.
 
-%description -l pl.UTF-8
+With the CUDA architecture and tools, developers are achieving
+dramatic speedups in fields such as medical imaging and natural
+resource exploration, and creating breakthrough applications in areas
+such as image recognition and real-time HD video playback and
+encoding.
+
+CUDA enables this unprecedented performance via standard APIs such
+OpenCL and DirectCompute, and high level programming languages such as
+C/C++, Fortran, Java, Python, and the Microsoft .NET Framework.
+
+##description -l pl.UTF-8
 
 %package libs
 Summary:	NVIDIA CUDA libraries
