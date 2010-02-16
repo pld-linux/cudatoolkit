@@ -6,7 +6,7 @@ Release:	1
 License:	nVidia Binary
 Group:		Applications
 Source0:	http://developer.download.nvidia.com/compute/cuda/2_3/toolkit/%{name}_%{version}_linux_32_fedora10.run
-# Source0-md5:	9da21f449005be25d0fc928c914562ba
+# Source0-md5:	4c7d5002aeff376f826e9744d8322dbe
 Source1:	http://developer.download.nvidia.com/compute/cuda/2_3/toolkit/%{name}_%{version}_linux_64_fedora10.run
 # Source1-md5:	9da21f449005be25d0fc928c914562ba
 URL:		http://www.nvidia.com/object/cuda_home.html
