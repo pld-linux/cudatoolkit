@@ -2,7 +2,7 @@ Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
 Version:	2.3
-Release:	1
+Release:	2
 License:	nVidia Binary
 Group:		Applications
 Source0:	http://developer.download.nvidia.com/compute/cuda/2_3/toolkit/%{name}_%{version}_linux_32_fedora10.run
@@ -59,7 +59,7 @@ cp -a pkg/cudaprof/doc pkg/cudaprof/cudaprof
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/cudaprof/{doc,bin}} \
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/cuda/prof/{doc,bin}} \
 	$RPM_BUILD_ROOT{%{_mandir}/man{1,3},%{_includedir}/cuda}
 
 install pkg/bin/* $RPM_BUILD_ROOT%{_bindir}
@@ -68,12 +68,15 @@ install pkg/man/man1/* $RPM_BUILD_ROOT%{_mandir}/man1
 install pkg/man/man3/* $RPM_BUILD_ROOT%{_mandir}/man3
 cp -a pkg/include/* $RPM_BUILD_ROOT%{_includedir}/cuda
 
-cp -a pkg/cudaprof/doc/cudaprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cudaprof/doc
-cp -a pkg/cudaprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cudaprof/doc
+cp -a pkg/open64 $RPM_BUILD_ROOT%{_libdir}/cuda
 
-install pkg/cudaprof/bin/cudaprof $RPM_BUILD_ROOT%{_libdir}/cudaprof/bin
-ln -s %{_libdir}/qt4/bin/assistant $RPM_BUILD_ROOT%{_libdir}/cudaprof/bin
-ln -s %{_libdir}/cudaprof/bin/cudaprof $RPM_BUILD_ROOT%{_bindir}/cudaprof
+cp -a pkg/cudaprof/doc/cudaprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
+cp -a pkg/cudaprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
+install pkg/cudaprof/bin/cudaprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
+
+ln -s %{_libdir}/qt4/bin/assistant $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin/assistant
+ln -s %{_libdir}/cuda/prof/bin/cudaprof $RPM_BUILD_ROOT%{_bindir}/cudaprof
+ln -s %{_libdir}/cuda/open64/bin/nvopencc $RPM_BUILD_ROOT%{_bindir}/nvopencc
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -92,12 +95,19 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/fatbin
 %attr(755,root,root) %{_bindir}/filehash
 %attr(755,root,root) %{_bindir}/nvcc
+%attr(755,root,root) %{_bindir}/nvopencc
 %attr(755,root,root) %{_bindir}/ptxas
 %{_includedir}/cuda
-%dir %{_libdir}/cudaprof
-%dir %{_libdir}/cudaprof/bin
-%attr(755,root,root) %{_libdir}/cudaprof/bin/*
-%{_libdir}/cudaprof/doc
+%dir %{_libdir}/cuda
+%dir %{_libdir}/cuda/prof
+%dir %{_libdir}/cuda/prof/bin
+%attr(755,root,root) %{_libdir}/cuda/prof/bin/*
+%{_libdir}/cuda/prof/doc
+%dir %{_libdir}/cuda/open64
+%dir %{_libdir}/cuda/open64/bin
+%dir %{_libdir}/cuda/open64/lib
+%attr(755,root,root) %{_libdir}/cuda/open64/bin/*
+%attr(755,root,root) %{_libdir}/cuda/open64/lib/*
 %attr(755,root,root) %{_libdir}/lib*.so
 %{_mandir}/man1/*
 %{_mandir}/man3/*
