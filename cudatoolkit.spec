@@ -15,7 +15,7 @@ Source1:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%
 # Source1-md5:	704b9b937526b758cf8e33817de64d35
 URL:		http://www.nvidia.com/object/cuda_home.html
 Requires:	%{name}-libs = %{version}-%{release}
-Requires:	qt4-assistant
+%{?with_prof:Requires:	qt4-assistant}
 Requires:	xorg-driver-video-nvidia-libs >= 1:190.53-4
 ExclusiveArch:	%{ix86} %{x8664}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
