@@ -1,14 +1,18 @@
+#
+# Conditional build:
+%bcond_with	prof		# package computeprof (requires Qt < 4.7)
+#
 Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
-Version:	2.3
-Release:	2
+Version:	3.1
+Release:	1
 License:	nVidia Binary
 Group:		Applications
-Source0:	http://developer.download.nvidia.com/compute/cuda/2_3/toolkit/%{name}_%{version}_linux_32_fedora10.run
-# Source0-md5:	4c7d5002aeff376f826e9744d8322dbe
-Source1:	http://developer.download.nvidia.com/compute/cuda/2_3/toolkit/%{name}_%{version}_linux_64_fedora10.run
-# Source1-md5:	9da21f449005be25d0fc928c914562ba
+Source0:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_32_fedora12.run
+# Source0-md5:	da98863cf8d538a083dd8958133f76a9
+Source1:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_64_fedora12.run
+# Source1-md5:	704b9b937526b758cf8e33817de64d35
 URL:		http://www.nvidia.com/object/cuda_home.html
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	qt4-assistant
@@ -53,7 +57,7 @@ Biblioteki NVIDIA CUDA.
 /bin/sh %{SOURCE1} --noexec --keep
 %endif
 
-cp -a pkg/cudaprof/doc pkg/cudaprof/cudaprof
+cp -a pkg/computeprof/doc pkg/computeprof/computeprof
 
 %build
 
@@ -70,12 +74,15 @@ cp -a pkg/include/* $RPM_BUILD_ROOT%{_includedir}/cuda
 
 cp -a pkg/open64 $RPM_BUILD_ROOT%{_libdir}/cuda
 
-cp -a pkg/cudaprof/doc/cudaprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
-cp -a pkg/cudaprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
-install pkg/cudaprof/bin/cudaprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
+%if %{with prof}
+cp -a pkg/computeprof/doc/computeprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
+cp -a pkg/computeprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
+install pkg/computeprof/bin/computeprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
 
 ln -s %{_libdir}/qt4/bin/assistant $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin/assistant
-ln -s %{_libdir}/cuda/prof/bin/cudaprof $RPM_BUILD_ROOT%{_bindir}/cudaprof
+ln -s %{_libdir}/cuda/prof/bin/computeprof $RPM_BUILD_ROOT%{_bindir}/computeprof
+%endif
+
 ln -s %{_libdir}/cuda/open64/bin/nvopencc $RPM_BUILD_ROOT%{_bindir}/nvopencc
 
 %clean
@@ -87,11 +94,10 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc pkg/doc/* pkg/bin/nvcc.profile
-%doc pkg/cudaprof/CUDA_Visual_Profiler_Release_Notes.txt pkg/cudaprof/cudaprof
 %attr(755,root,root) %{_bindir}/bin2c
 %attr(755,root,root) %{_bindir}/cuda-gdb
+%attr(755,root,root) %{_bindir}/cuda-memcheck
 %attr(755,root,root) %{_bindir}/cudafe*
-%attr(755,root,root) %{_bindir}/cudaprof
 %attr(755,root,root) %{_bindir}/fatbin
 %attr(755,root,root) %{_bindir}/filehash
 %attr(755,root,root) %{_bindir}/nvcc
@@ -99,10 +105,14 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/ptxas
 %{_includedir}/cuda
 %dir %{_libdir}/cuda
+%if %{with prof}
+%doc pkg/computeprof/CUDA_Visual_Profiler_Release_Notes.txt pkg/computeprof/computeprof
 %dir %{_libdir}/cuda/prof
 %dir %{_libdir}/cuda/prof/bin
+%attr(755,root,root) %{_bindir}/computeprof
 %attr(755,root,root) %{_libdir}/cuda/prof/bin/*
 %{_libdir}/cuda/prof/doc
+%endif
 %dir %{_libdir}/cuda/open64
 %dir %{_libdir}/cuda/open64/bin
 %dir %{_libdir}/cuda/open64/lib
@@ -114,5 +124,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %ghost %{_libdir}/lib*.so.2
+%attr(755,root,root) %ghost %{_libdir}/lib*.so.3
 %attr(755,root,root) %{_libdir}/lib*.so.*.*
