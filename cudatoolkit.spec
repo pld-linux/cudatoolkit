@@ -6,7 +6,7 @@ Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
 Version:	3.1
-Release:	1
+Release:	2
 License:	nVidia Binary
 Group:		Applications
 Source0:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_32_fedora12.run
@@ -64,7 +64,8 @@ cp -a pkg/computeprof/doc pkg/computeprof/computeprof
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/cuda/prof/{doc,bin}} \
-	$RPM_BUILD_ROOT{%{_mandir}/man{1,3},%{_includedir}/cuda}
+	$RPM_BUILD_ROOT{%{_mandir}/man{1,3},%{_includedir}/cuda} \
+	$RPM_BUILD_ROOT%{_sysconfdir}
 
 install pkg/bin/* $RPM_BUILD_ROOT%{_bindir}
 cp -a pkg/%{_lib}/* $RPM_BUILD_ROOT%{_libdir}
@@ -73,6 +74,24 @@ install pkg/man/man3/* $RPM_BUILD_ROOT%{_mandir}/man3
 cp -a pkg/include/* $RPM_BUILD_ROOT%{_includedir}/cuda
 
 cp -a pkg/open64 $RPM_BUILD_ROOT%{_libdir}/cuda
+
+mv $RPM_BUILD_ROOT%{_bindir}/nvcc{,.bin}
+cat <<EOF >$RPM_BUILD_ROOT%{_sysconfdir}/nvcc.conf
+INCLUDES="-I/usr/include/cuda"
+LIBRARIES="-lcudart"
+
+CUDAFE_FLAGS=
+OPENCC_FLAGS=
+PTXAS_FLAGS=
+EOF
+
+cat <<EOF >$RPM_BUILD_ROOT%{_bindir}/nvcc
+#!/bin/sh
+
+. %{_sysconfdir}/nvcc.conf
+
+exec %{_bindir}/nvcc.bin "\$@"
+EOF
 
 %if %{with prof}
 cp -a pkg/computeprof/doc/computeprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
@@ -94,6 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc pkg/doc/* pkg/bin/nvcc.profile
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/nvcc.conf
 %attr(755,root,root) %{_bindir}/bin2c
 %attr(755,root,root) %{_bindir}/cuda-gdb
 %attr(755,root,root) %{_bindir}/cuda-memcheck
@@ -101,6 +121,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/fatbin
 %attr(755,root,root) %{_bindir}/filehash
 %attr(755,root,root) %{_bindir}/nvcc
+%attr(755,root,root) %{_bindir}/nvcc.bin
 %attr(755,root,root) %{_bindir}/nvopencc
 %attr(755,root,root) %{_bindir}/ptxas
 %{_includedir}/cuda
