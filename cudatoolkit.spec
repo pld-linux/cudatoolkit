@@ -6,7 +6,7 @@ Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
 Version:	3.1
-Release:	2
+Release:	3
 License:	nVidia Binary
 Group:		Applications
 Source0:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_32_fedora12.run
@@ -89,6 +89,8 @@ cat <<EOF >$RPM_BUILD_ROOT%{_bindir}/nvcc
 #!/bin/sh
 
 . %{_sysconfdir}/nvcc.conf
+
+export INCLUDES LIBRARIES CUDAFE_FLAGS OPENCC_FLAGS PTXAS_FLAG
 
 exec %{_bindir}/nvcc.bin "\$@"
 EOF
