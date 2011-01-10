@@ -1,14 +1,14 @@
 #
 # Conditional build:
 %bcond_with	prof		# package computeprof (requires Qt < 4.7)
-#
+
 Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
 Version:	3.1
 Release:	3
 License:	nVidia Binary
-Group:		Applications
+Group:		Development/Tools
 Source0:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_32_fedora12.run
 # Source0-md5:	da98863cf8d538a083dd8958133f76a9
 Source1:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_64_fedora12.run
@@ -21,9 +21,9 @@ ExclusiveArch:	%{ix86} %{x8664}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-The CUDA™ architecture enables developers to leverage the massively
+The CUDA(tm) architecture enables developers to leverage the massively
 parallel processing power of NVIDIA GPUs, delivering the performance
-of NVIDIA’s world-renowned graphics processor technology to general
+of NVIDIA's world-renowned graphics processor technology to general
 purpose GPU Computing.
 
 With the CUDA architecture and tools, developers are achieving
@@ -35,8 +35,6 @@ encoding.
 CUDA enables this unprecedented performance via standard APIs such
 OpenCL and DirectCompute, and high level programming languages such as
 C/C++, Fortran, Java, Python, and the Microsoft .NET Framework.
-
-##description -l pl.UTF-8
 
 %package libs
 Summary:	NVIDIA CUDA libraries
@@ -56,10 +54,7 @@ Biblioteki NVIDIA CUDA.
 %else
 /bin/sh %{SOURCE1} --noexec --keep
 %endif
-
 cp -a pkg/computeprof/doc pkg/computeprof/computeprof
-
-%build
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -67,16 +62,16 @@ install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/cuda/prof/{doc,bin}} \
 	$RPM_BUILD_ROOT{%{_mandir}/man{1,3},%{_includedir}/cuda} \
 	$RPM_BUILD_ROOT%{_sysconfdir}
 
-install pkg/bin/* $RPM_BUILD_ROOT%{_bindir}
+install -p pkg/bin/* $RPM_BUILD_ROOT%{_bindir}
 cp -a pkg/%{_lib}/* $RPM_BUILD_ROOT%{_libdir}
-install pkg/man/man1/* $RPM_BUILD_ROOT%{_mandir}/man1
-install pkg/man/man3/* $RPM_BUILD_ROOT%{_mandir}/man3
+cp -p pkg/man/man1/* $RPM_BUILD_ROOT%{_mandir}/man1
+cp -p pkg/man/man3/* $RPM_BUILD_ROOT%{_mandir}/man3
 cp -a pkg/include/* $RPM_BUILD_ROOT%{_includedir}/cuda
 
 cp -a pkg/open64 $RPM_BUILD_ROOT%{_libdir}/cuda
 
 mv $RPM_BUILD_ROOT%{_bindir}/nvcc{,.bin}
-cat <<EOF >$RPM_BUILD_ROOT%{_sysconfdir}/nvcc.conf
+cat <<'EOF' >$RPM_BUILD_ROOT%{_sysconfdir}/nvcc.conf
 INCLUDES="-I/usr/include/cuda"
 LIBRARIES="-lcudart"
 
@@ -85,20 +80,19 @@ OPENCC_FLAGS=
 PTXAS_FLAGS=
 EOF
 
-cat <<EOF >$RPM_BUILD_ROOT%{_bindir}/nvcc
+cat <<'EOF' >$RPM_BUILD_ROOT%{_bindir}/nvcc
 #!/bin/sh
-
 . %{_sysconfdir}/nvcc.conf
 
 export INCLUDES LIBRARIES CUDAFE_FLAGS OPENCC_FLAGS PTXAS_FLAG
 
-exec %{_bindir}/nvcc.bin "\$@"
+exec %{_bindir}/nvcc.bin "$@"
 EOF
 
 %if %{with prof}
 cp -a pkg/computeprof/doc/computeprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
 cp -a pkg/computeprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
-install pkg/computeprof/bin/computeprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
+install -p pkg/computeprof/bin/computeprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
 
 ln -s %{_libdir}/qt4/bin/assistant $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin/assistant
 ln -s %{_libdir}/cuda/prof/bin/computeprof $RPM_BUILD_ROOT%{_bindir}/computeprof
@@ -109,7 +103,7 @@ ln -s %{_libdir}/cuda/open64/bin/nvopencc $RPM_BUILD_ROOT%{_bindir}/nvopencc
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post libs -p /sbin/ldconfig
+%post	libs -p /sbin/ldconfig
 %postun	libs -p /sbin/ldconfig
 
 %files
@@ -141,11 +135,17 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/cuda/open64/lib
 %attr(755,root,root) %{_libdir}/cuda/open64/bin/*
 %attr(755,root,root) %{_libdir}/cuda/open64/lib/*
-%attr(755,root,root) %{_libdir}/lib*.so
+%{_libdir}/libcublas.so
+%{_libdir}/libcudart.so
+%{_libdir}/libcufft.so
 %{_mandir}/man1/*
 %{_mandir}/man3/*
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %ghost %{_libdir}/lib*.so.3
-%attr(755,root,root) %{_libdir}/lib*.so.*.*
+%ghost %{_libdir}/libcublas.so.3
+%attr(755,root,root) %{_libdir}/libcublas.so.*.*.*
+%ghost %{_libdir}/libcudart.so.3
+%attr(755,root,root) %{_libdir}/libcudart.so.*.*.*
+%ghost %{_libdir}/libcufft.so.3
+%attr(755,root,root) %{_libdir}/libcufft.so.*.*.*
