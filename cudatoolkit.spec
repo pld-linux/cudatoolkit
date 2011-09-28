@@ -5,14 +5,20 @@
 Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
-Version:	3.1
-Release:	6
+Version:	4.0.17
+Release:	0.1
 License:	nVidia Binary
 Group:		Development/Tools
-Source0:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_32_fedora12.run
-# Source0-md5:	da98863cf8d538a083dd8958133f76a9
-Source1:	http://developer.download.nvidia.com/compute/cuda/3_1/toolkit/%{name}_%{version}_linux_64_fedora12.run
-# Source1-md5:	704b9b937526b758cf8e33817de64d35
+Source0:	http://developer.download.nvidia.com/compute/cuda/4_0/toolkit/%{name}_%{version}_linux_32_ubuntu10.10.run
+# Source0-md5:	8d025093ac6713eaa7dbffc8f3493606
+Source1:	http://developer.download.nvidia.com/compute/cuda/4_0/toolkit/%{name}_%{version}_linux_64_ubuntu10.10.run
+# Source1-md5:	fb1f87e7a112545f6f07bc30e646bdf4
+Source2:	http://developer.download.nvidia.com/compute/cuda/4_0/sdk/gpucomputingsdk_%{version}_linux.run
+# Source2-md5:	07393c5eb702485deaa06a37747391ea
+Source3:	http://developer.download.nvidia.com/compute/cuda/4_0/ToolsSDK/cudatools_%{version}_linux_32.run
+# Source3-md5:	6426892e521b931a18b57e3680b1cc4e
+Source4:	http://developer.download.nvidia.com/compute/cuda/4_0/ToolsSDK/cudatools_%{version}_linux_64.run
+# Source4-md5:	1fc9673eccb604ed6e386397b995ec25
 URL:		http://www.nvidia.com/object/cuda_home.html
 Requires:	%{name}-libs = %{version}-%{release}
 %{?with_prof:Requires:	qt4-assistant}
@@ -51,9 +57,12 @@ Biblioteki NVIDIA CUDA.
 %setup -qcT
 %ifarch %{ix86}
 /bin/sh %{SOURCE0} --noexec --keep
+/bin/sh %{SOURCE3} --noexec --keep
 %else
 /bin/sh %{SOURCE1} --noexec --keep
+/bin/sh %{SOURCE4} --noexec --keep
 %endif
+/bin/sh %{SOURCE2} --noexec --keep
 cp -a pkg/computeprof/doc pkg/computeprof/computeprof
 
 %install
