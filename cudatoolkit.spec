@@ -26,6 +26,9 @@ Requires:	xorg-driver-video-nvidia-libs >= 1:190.53-4
 ExclusiveArch:	%{ix86} %{x8664}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
+# libcublas and libcusparse indirectly use symbols from libdl
+%define		skip_post_check_so	libcublas.so.* libcusparse.so.*
+
 %description
 The CUDA(tm) architecture enables developers to leverage the massively
 parallel processing power of NVIDIA GPUs, delivering the performance
@@ -53,31 +56,55 @@ NVIDIA CUDA libraries.
 %description libs -l pl.UTF-8
 Biblioteki NVIDIA CUDA.
 
+%package sdk
+Summary:	NVIDIA GPU Computing SDK
+Group:		Libraries
+
+%description sdk
+The GPU Computing SDK includes 100+ code samples, utilities,
+whitepapers, and additional documentation to help you get started
+developing, porting, and optimizing your applications for the CUDA
+architecture.
+
 %prep
 %setup -qcT
 %ifarch %{ix86}
-/bin/sh %{SOURCE0} --noexec --keep
-/bin/sh %{SOURCE3} --noexec --keep
+/bin/sh %{SOURCE0} --noexec --keep --target toolkit
+/bin/sh %{SOURCE3} --noexec --keep --target tools
 %else
-/bin/sh %{SOURCE1} --noexec --keep
-/bin/sh %{SOURCE4} --noexec --keep
+/bin/sh %{SOURCE1} --noexec --keep --target toolkit
+/bin/sh %{SOURCE4} --noexec --keep --target tools
 %endif
-/bin/sh %{SOURCE2} --noexec --keep
-cp -a pkg/computeprof/doc pkg/computeprof/computeprof
+/bin/sh %{SOURCE2} --noexec --keep --target gpucomputing
+
+cp -a toolkit/computeprof/doc toolkit/computeprof/computeprof
+cp -a tools/CUPTI/doc tools/CUPTI/CUPTI
+cp -a tools/Debugger/doc tools/Debugger/Debugger
+cp -a tools/NVML/doxygen tools/NVML/NVML
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir}/cuda/prof/{doc,bin}} \
-	$RPM_BUILD_ROOT{%{_mandir}/man{1,3},%{_includedir}/cuda} \
+	$RPM_BUILD_ROOT%{_includedir}/cuda/{CUPTI,Debugger,NVML} \
+	$RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}/CUPTI \
+	$RPM_BUILD_ROOT%{_usrsrc}/%{name}-sdk-%{version} \
 	$RPM_BUILD_ROOT%{_sysconfdir}
 
-install -p pkg/bin/* $RPM_BUILD_ROOT%{_bindir}
-cp -a pkg/%{_lib}/* $RPM_BUILD_ROOT%{_libdir}
-cp -p pkg/man/man1/* $RPM_BUILD_ROOT%{_mandir}/man1
-cp -p pkg/man/man3/* $RPM_BUILD_ROOT%{_mandir}/man3
-cp -a pkg/include/* $RPM_BUILD_ROOT%{_includedir}/cuda
+install -p toolkit/bin/* $RPM_BUILD_ROOT%{_bindir}
+cp -a toolkit/%{_lib}/* $RPM_BUILD_ROOT%{_libdir}
+cp -a tools/CUPTI/lib/* $RPM_BUILD_ROOT%{_libdir}
 
-cp -a pkg/open64 $RPM_BUILD_ROOT%{_libdir}/cuda
+cp -a toolkit/include/* $RPM_BUILD_ROOT%{_includedir}/cuda
+cp -a tools/CUPTI/include/* $RPM_BUILD_ROOT%{_includedir}/cuda/CUPTI
+cp -a tools/Debugger/include/* $RPM_BUILD_ROOT%{_includedir}/cuda/Debugger
+cp -a tools/NVML/*.h $RPM_BUILD_ROOT%{_includedir}/cuda/NVML
+
+cp -a toolkit/open64 $RPM_BUILD_ROOT%{_libdir}/cuda
+
+cp -a toolkit/src/* $RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}
+cp -a tools/CUPTI/sample/* $RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}/CUPTI
+
+cp -a gpucomputing/sdk/* $RPM_BUILD_ROOT%{_usrsrc}/%{name}-sdk-%{version}
 
 mv $RPM_BUILD_ROOT%{_bindir}/nvcc{,.bin}
 cat <<'EOF' >$RPM_BUILD_ROOT%{_sysconfdir}/nvcc.conf
@@ -99,9 +126,9 @@ exec %{_bindir}/nvcc.bin "$@"
 EOF
 
 %if %{with prof}
-cp -a pkg/computeprof/doc/computeprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
-cp -a pkg/computeprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
-install -p pkg/computeprof/bin/computeprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
+cp -a toolkit/computeprof/doc/computeprof.{html,q*} $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
+cp -a toolkit/computeprof/doc/help.png $RPM_BUILD_ROOT%{_libdir}/cuda/prof/doc
+install -p toolkit/computeprof/bin/computeprof $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin
 
 ln -s %{_libdir}/qt4/bin/assistant $RPM_BUILD_ROOT%{_libdir}/cuda/prof/bin/assistant
 ln -s %{_libdir}/cuda/prof/bin/computeprof $RPM_BUILD_ROOT%{_bindir}/computeprof
@@ -117,13 +144,15 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc pkg/doc/* pkg/bin/nvcc.profile
+%doc toolkit/doc/* toolkit/bin/nvcc.profile
+%doc tools/CUPTI/CUPTI  tools/Debugger/Debugger  tools/NVML/NVML
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/nvcc.conf
 %attr(755,root,root) %{_bindir}/bin2c
 %attr(755,root,root) %{_bindir}/cuda-gdb
 %attr(755,root,root) %{_bindir}/cuda-memcheck
 %attr(755,root,root) %{_bindir}/cudafe*
-%attr(755,root,root) %{_bindir}/fatbin
+%attr(755,root,root) %{_bindir}/cuobjdump
+%attr(755,root,root) %{_bindir}/fatbin*
 %attr(755,root,root) %{_bindir}/filehash
 %attr(755,root,root) %{_bindir}/nvcc
 %attr(755,root,root) %{_bindir}/nvcc.bin
@@ -132,7 +161,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/cuda
 %dir %{_libdir}/cuda
 %if %{with prof}
-%doc pkg/computeprof/CUDA_Visual_Profiler_Release_Notes.txt pkg/computeprof/computeprof
+%doc toolkit/computeprof/CUDA_Visual_Profiler_Release_Notes.txt toolkit/computeprof/computeprof
 %dir %{_libdir}/cuda/prof
 %dir %{_libdir}/cuda/prof/bin
 %attr(755,root,root) %{_bindir}/computeprof
@@ -147,14 +176,29 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libcublas.so
 %{_libdir}/libcudart.so
 %{_libdir}/libcufft.so
-%{_mandir}/man1/*
-%{_mandir}/man3/*
+%{_libdir}/libcupti.so
+%{_libdir}/libcurand.so
+%{_libdir}/libcusparse.so
+%{_libdir}/libnpp.so
+%{_examplesdir}/%{name}-%{version}
 
 %files libs
 %defattr(644,root,root,755)
-%ghost %{_libdir}/libcublas.so.3
+%ghost %{_libdir}/libcublas.so.4
 %attr(755,root,root) %{_libdir}/libcublas.so.*.*.*
-%ghost %{_libdir}/libcudart.so.3
+%ghost %{_libdir}/libcudart.so.4
 %attr(755,root,root) %{_libdir}/libcudart.so.*.*.*
-%ghost %{_libdir}/libcufft.so.3
+%ghost %{_libdir}/libcufft.so.4
 %attr(755,root,root) %{_libdir}/libcufft.so.*.*.*
+%ghost %{_libdir}/libcupti.so.4
+%attr(755,root,root) %{_libdir}/libcupti.so.*.*.*
+%ghost %{_libdir}/libcurand.so.4
+%attr(755,root,root) %{_libdir}/libcurand.so.*.*.*
+%ghost %{_libdir}/libcusparse.so.4
+%attr(755,root,root) %{_libdir}/libcusparse.so.*.*.*
+%ghost %{_libdir}/libnpp.so.4
+%attr(755,root,root) %{_libdir}/libnpp.so.*.*.*
+
+%files sdk
+%defattr(644,root,root,755)
+%{_usrsrc}/%{name}-sdk-%{version}
