@@ -6,7 +6,7 @@ Summary:	NVIDIA CUDA Toolkit
 Summary(pl.UTF-8):	Zestaw narzędzi NVIDIA CUDA
 Name:		cudatoolkit
 Version:	4.0.17
-Release:	0.1
+Release:	1
 License:	nVidia Binary
 Group:		Development/Tools
 Source0:	http://developer.download.nvidia.com/compute/cuda/4_0/toolkit/%{name}_%{version}_linux_32_ubuntu10.10.run
